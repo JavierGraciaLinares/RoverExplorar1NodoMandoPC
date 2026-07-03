@@ -287,7 +287,7 @@
               </StackPanel>
             </Border>
             <Border Grid.Column="1" Classes="card">
-              <Grid RowDefinitions="Auto,*">
+              <Grid RowDefinitions="Auto,*,Auto">
                 <Grid ColumnDefinitions="*,Auto">
                   <TextBlock Text="LOG DE EVENTOS" Classes="sectionTitle"/>
                   <TextBlock Grid.Column="1" Text="{Binding LogMessages.Count, StringFormat='{}{0} eventos'}" FontSize="11" Foreground="{StaticResource TextMuted}" VerticalAlignment="Bottom"/>
@@ -301,6 +301,13 @@
                     </ItemsControl.ItemTemplate>
                   </ItemsControl>
                 </ScrollViewer>
+                <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="6" Margin="0,6,0,0">
+                  <TextBox Text="{Binding CommandText}" Classes="input" PlaceholderText="Escribir comando y ENTER para enviar..."
+                           KeyDown="OnCommandKeyDown"/>
+                  <Button Grid.Column="1" Content="ENVIAR" Command="{Binding SendCustomCommand}"
+                          Background="{StaticResource Blue}" Foreground="White" FontWeight="Bold"
+                          CornerRadius="6" MinWidth="80" MinHeight="30" Cursor="Hand"/>
+                </Grid>
               </Grid>
             </Border>
           </Grid>

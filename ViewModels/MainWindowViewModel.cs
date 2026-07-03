@@ -105,6 +105,9 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
         [ObservableProperty]
         private string _rawAxesInfo = "";
 
+        [ObservableProperty]
+        private string _commandText = "";
+
         public ObservableCollection<string> LogMessages { get; } = new();
         public ObservableCollection<ControllerButtonState> ControllerButtons { get; } = new();
         public ObservableCollection<ControllerDeviceInfo> AvailableControllers { get; } = new();
@@ -125,10 +128,15 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
 
         private void InitButtons()
         {
-            string[] names = ["Select", "L3", "R3", "Start",
-                              "D-Up", "D-Right", "D-Down", "D-Left",
-                              "L2", "R2", "L1", "R1",
-                              "Triang", "Circulo", "Cruz", "Cuadrado", "Home"];
+            string[] names = [
+                "Cruz", "Circulo", "Cuadrado", "Triang",
+                "L1", "R1",
+                "Select", "Start",
+                "L3", "R3",
+                "Home",
+                "D-Up", "D-Right", "D-Down", "D-Left",
+                "L2", "R2"
+            ];
             for (int i = 0; i < names.Length; i++)
                 ControllerButtons.Add(new ControllerButtonState(i, names[i]));
         }
@@ -232,7 +240,7 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
             for (int i = 0; i < state.Buttons.Length && i < ControllerButtons.Count; i++)
                 ControllerButtons[i].Pressed = state.Buttons[i];
 
-            if (state.Buttons.Length > 14 && state.Buttons[14])
+            if (state.Buttons.Length > 0 && state.Buttons[0])
             {
                 LeftMotorSpeed = 0;
                 RightMotorSpeed = 0;
@@ -282,6 +290,16 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
             RightMotorSpeed = 0;
             if (_roverClient.IsConnected) _roverClient.SendCommand("0,0");
             AddLog("Parada de emergencia!");
+        }
+
+        [RelayCommand]
+        private void SendCustomCommand()
+        {
+            if (string.IsNullOrWhiteSpace(CommandText)) return;
+            string cmd = CommandText.Trim();
+            _roverClient.SendCommand(cmd);
+            AddLog($"> {cmd}");
+            CommandText = "";
         }
 
         private void AddLog(string message)

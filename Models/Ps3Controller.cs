@@ -141,27 +141,43 @@ namespace RoverExplorer1NodoMandoPC.Models
                         ? state.PointOfViewControllers[0] : -1;
                     if (pov > 36000) pov = -1;
 
+                    bool dUp = false, dRight = false, dDown = false, dLeft = false;
                     if (pov >= 0)
                     {
                         double angle = pov / 100.0;
                         const double tol = 44.0;
-                        buttons[4] = angle > (360.0 - tol) || angle < tol;
-                        buttons[5] = angle > (90.0 - tol) && angle < (90.0 + tol);
-                        buttons[6] = angle > (180.0 - tol) && angle < (180.0 + tol);
-                        buttons[7] = angle > (270.0 - tol) && angle < (270.0 + tol);
+                        dUp = angle > (360.0 - tol) || angle < tol;
+                        dRight = angle > (90.0 - tol) && angle < (90.0 + tol);
+                        dDown = angle > (180.0 - tol) && angle < (180.0 + tol);
+                        dLeft = angle > (270.0 - tol) && angle < (270.0 + tol);
                     }
+
+                    bool l1 = buttons[4], r1 = buttons[5];
+                    bool sel = buttons[6], sta = buttons[7];
+                    buttons[4] = false; buttons[5] = false;
+                    buttons[6] = false; buttons[7] = false;
+                    buttons[11] = dUp;
+                    buttons[12] = dRight;
+                    buttons[13] = dDown;
+                    buttons[14] = dLeft;
+                    buttons[4] = l1 && !dUp;
+                    buttons[5] = r1 && !dRight;
+                    buttons[6] = sel && !dUp && !dDown;
+                    buttons[7] = sta && !dLeft;
 
                     string sliders = state.Sliders.Length > 0
                         ? string.Join(", ", state.Sliders) : "(none)";
+
+                    double zNorm = NormalizeAxis(state.Z);
 
                     var cs = new ControllerState
                     {
                         LeftStickX = NormalizeAxis(state.X),
                         LeftStickY = NormalizeAxis(state.Y),
-                        RightStickX = NormalizeAxis(state.Z),
-                        RightStickY = NormalizeAxis(state.RotationZ),
-                        L2 = state.Sliders.Length > 0 ? NormalizeAxis(state.Sliders[0]) : 0,
-                        R2 = state.Sliders.Length > 1 ? NormalizeAxis(state.Sliders[1]) : 0,
+                        RightStickX = NormalizeAxis(state.RotationX),
+                        RightStickY = NormalizeAxis(state.RotationY),
+                        L2 = Math.Max(0, zNorm),
+                        R2 = Math.Max(0, -zNorm),
                         Buttons = buttons,
                         RawDebugInfo = $"X:{state.X} Y:{state.Y} Z:{state.Z} " +
                             $"RotX:{state.RotationX} RotY:{state.RotationY} RotZ:{state.RotationZ} " +
