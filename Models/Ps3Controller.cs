@@ -20,13 +20,20 @@ namespace RoverExplorer1NodoMandoPC.Models
         private CancellationTokenSource? _cts;
         private Task? _pollTask;
         private IntPtr _windowHandle;
+        private bool _handleReady;
+        private int _pollCount;
 
         public event Action<ControllerState>? OnStateChanged;
         public event Action<bool>? OnConnectionChanged;
 
         public bool IsConnected { get; private set; }
 
-        public void SetWindowHandle(IntPtr handle) => _windowHandle = handle;
+        public void SetWindowHandle(IntPtr handle)
+        {
+            _windowHandle = handle;
+            _handleReady = true;
+            Start();
+        }
 
         public void Start()
         {
@@ -39,24 +46,28 @@ namespace RoverExplorer1NodoMandoPC.Models
         {
             _cts?.Cancel();
             try { _pollTask?.Wait(1000); } catch { }
-            _joystick?.Unacquire();
-            _joystick?.Dispose();
-            _joystick = null;
-            IsConnected = false;
+            ReleaseJoystick();
+            SetConnected(false);
         }
 
         private void PollLoop(CancellationToken token)
         {
-            int failCount = 0;
             while (!token.IsCancellationRequested)
             {
                 try
                 {
+                    if (!_handleReady)
+                    {
+                        Thread.Sleep(100);
+                        continue;
+                    }
+
                     if (_joystick == null || _joystick.IsDisposed)
                     {
                         FindAndAcquireJoystick();
                         if (_joystick == null)
                         {
+                            SetConnected(false);
                             Thread.Sleep(1000);
                             continue;
                         }
@@ -77,25 +88,20 @@ namespace RoverExplorer1NodoMandoPC.Models
                     };
 
                     OnStateChanged?.Invoke(cs);
+                    SetConnected(true);
+                    _pollCount++;
 
-                    if (!IsConnected)
+                    if (_pollCount % 500 == 0)
                     {
-                        IsConnected = true;
-                        OnConnectionChanged?.Invoke(true);
+                        try { _joystick.Unacquire(); _joystick.Acquire(); }
+                        catch { ReleaseJoystick(); SetConnected(false); Thread.Sleep(200); continue; }
                     }
-                    failCount = 0;
                 }
                 catch
                 {
-                    failCount++;
-                    if (IsConnected)
-                    {
-                        IsConnected = false;
-                        OnConnectionChanged?.Invoke(false);
-                    }
-                    _joystick?.Dispose();
-                    _joystick = null;
-                    Thread.Sleep(failCount > 5 ? 2000 : 100);
+                    ReleaseJoystick();
+                    SetConnected(false);
+                    Thread.Sleep(1000);
                 }
 
                 Thread.Sleep(15);
@@ -105,29 +111,61 @@ namespace RoverExplorer1NodoMandoPC.Models
         private void FindAndAcquireJoystick()
         {
             var devices = _directInput.GetDevices();
+            DeviceInstance found = default!;
+            bool foundDevice = false;
+
             foreach (var dev in devices)
             {
                 string name = dev.ProductName.ToLower();
-                if (name.Contains("ps3") || name.Contains("playstation") ||
-                    name.Contains("dual") || name.Contains("wireless controller"))
+                string[] keywords = ["ps3", "playstation", "dual", "wireless controller",
+                                     "gamepad", "joystick", "xbox", "controller"];
+                for (int i = 0; i < keywords.Length; i++)
                 {
-                    _joystick = new Joystick(_directInput, dev.InstanceGuid);
-                    _joystick.SetCooperativeLevel(_windowHandle, CooperativeLevel.NonExclusive | CooperativeLevel.Background);
-                    _joystick.Properties.AxisMode = DeviceAxisMode.Absolute;
-                    _joystick.Acquire();
-                    System.Diagnostics.Debug.WriteLine($"Mando PS3 encontrado: {dev.ProductName}");
-                    return;
+                    if (name.Contains(keywords[i]))
+                    {
+                        found = dev;
+                        foundDevice = true;
+                        break;
+                    }
+                }
+                if (foundDevice)
+                {
+                    if (name.Contains("ps3") || name.Contains("playstation"))
+                        break;
                 }
             }
-            foreach (var dev in devices)
+
+            if (!foundDevice) return;
+
+            var joystick = new Joystick(_directInput, found.InstanceGuid);
+            try
             {
-                _joystick = new Joystick(_directInput, dev.InstanceGuid);
-                _joystick.SetCooperativeLevel(_windowHandle, CooperativeLevel.NonExclusive | CooperativeLevel.Background);
-                _joystick.Properties.AxisMode = DeviceAxisMode.Absolute;
-                _joystick.Acquire();
-                System.Diagnostics.Debug.WriteLine($"Mando alternativo: {dev.ProductName}");
-                return;
+                joystick.SetCooperativeLevel(_windowHandle,
+                    CooperativeLevel.NonExclusive | CooperativeLevel.Background);
+                joystick.Properties.AxisMode = DeviceAxisMode.Absolute;
+                joystick.Acquire();
+                _joystick = joystick;
+                System.Diagnostics.Debug.WriteLine($"Mando: {found.ProductName!}");
             }
+            catch
+            {
+                joystick.Dispose();
+            }
+        }
+
+        private void SetConnected(bool connected)
+        {
+            if (IsConnected == connected) return;
+            IsConnected = connected;
+            OnConnectionChanged?.Invoke(connected);
+        }
+
+        private void ReleaseJoystick()
+        {
+            if (_joystick == null) return;
+            try { _joystick.Unacquire(); } catch { }
+            _joystick.Dispose();
+            _joystick = null;
         }
 
         private static double NormalizeAxis(int value)

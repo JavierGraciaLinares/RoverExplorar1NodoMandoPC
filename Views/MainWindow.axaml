@@ -3,91 +3,192 @@
         xmlns:vm="using:RoverExplorer1NodoMandoPC.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        mc:Ignorable="d" d:DesignWidth="850" d:DesignHeight="650"
         x:Class="RoverExplorer1NodoMandoPC.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="Rover Explorer - Nodo de Mando"
         Icon="/Assets/avalonia-logo.ico"
-        MinWidth="700" MinHeight="500">
+        MinWidth="750" MinHeight="550">
 
-  <Grid RowDefinitions="Auto,Auto,Auto,1*,Auto" Margin="8" RowSpacing="6">
+  <Window.Styles>
+    <Style Selector="Border.card">
+      <Setter Property="Background" Value="{DynamicResource ThemeCardBackground}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidColor}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="Padding" Value="14"/>
+    </Style>
+    <Style Selector="TextBlock.sectionTitle">
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="Margin" Value="0,0,0,8"/>
+      <Setter Property="Foreground" Value="{DynamicResource ThemeAccentBrush}"/>
+    </Style>
+    <Style Selector="Border.statusDot">
+      <Setter Property="Width" Value="10"/>
+      <Setter Property="Height" Value="10"/>
+      <Setter Property="CornerRadius" Value="5"/>
+      <Setter Property="Margin" Value="0,0,6,0"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.primary">
+      <Setter Property="Background" Value="#2b5e2b"/>
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="MinWidth" Value="90"/>
+    </Style>
+    <Style Selector="Button.danger">
+      <Setter Property="Background" Value="#8b0000"/>
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+    </Style>
+  </Window.Styles>
 
-    <!-- Connection -->
-    <Border BorderBrush="#888" BorderThickness="1" CornerRadius="6" Padding="10">
-      <StackPanel Orientation="Horizontal" Spacing="6">
-        <TextBlock Text="Rover IP:" VerticalAlignment="Center"/>
-        <TextBox Text="{Binding RoverIp}" Width="130"/>
-        <TextBlock Text="Puerto:" VerticalAlignment="Center"/>
-        <TextBox Text="{Binding RoverPort}" Width="70"/>
-        <Button Content="Conectar" Command="{Binding ConnectCommand}" IsEnabled="{Binding CanConnect}"
-                MinWidth="80"/>
-        <Button Content="Desconectar" Command="{Binding DisconnectCommand}" IsEnabled="{Binding IsConnected}"
-                MinWidth="80"/>
-        <TextBlock Text="{Binding ConnectionStatus, StringFormat='Estado: {0}'}" VerticalAlignment="Center"
-                   FontWeight="Bold" Margin="10,0,0,0"/>
+  <Grid RowDefinitions="Auto,Auto,Auto,Auto,1*,Auto" Margin="10" RowSpacing="8">
+
+    <!-- ===== HEADER ===== -->
+    <Border Grid.Row="0" Background="{DynamicResource ThemeAccentBrush}" CornerRadius="8" Padding="12,8">
+      <StackPanel Orientation="Horizontal" Spacing="10">
+        <TextBlock Text="ROVER EXPLORER" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+        <TextBlock Text="|" FontSize="18" Foreground="#88ffffff" VerticalAlignment="Center"/>
+        <TextBlock Text="Nodo de Mando" FontSize="15" Foreground="#ddf" VerticalAlignment="Center"/>
       </StackPanel>
     </Border>
 
-    <!-- Controller Status -->
-    <Border Grid.Row="1" BorderBrush="#888" BorderThickness="1" CornerRadius="6" Padding="10">
-      <Grid ColumnDefinitions="Auto,*,Auto">
-        <StackPanel Orientation="Horizontal" Spacing="4">
-          <TextBlock Text="MANDO PS3:" FontWeight="Bold" VerticalAlignment="Center"/>
-          <TextBlock Text="{Binding ControllerStatus}" VerticalAlignment="Center"/>
+    <!-- ===== CONNECTION ===== -->
+    <Border Grid.Row="1" Classes="card">
+      <Grid RowDefinitions="Auto,Auto" RowSpacing="8">
+        <!-- Row 0: inputs + buttons -->
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock Text="Rover IP:" VerticalAlignment="Center" MinWidth="60"/>
+          <TextBox Text="{Binding RoverIp}" Width="140" PlaceholderText="IP del rover"/>
+          <TextBlock Text="Puerto:" VerticalAlignment="Center" Margin="6,0,0,0"/>
+          <TextBox Text="{Binding RoverPort}" Width="80" PlaceholderText="Puerto"/>
+          <Button Content="Conectar" Command="{Binding ConnectCommand}" IsEnabled="{Binding CanConnect}"
+                  Classes="primary" Margin="12,0,0,0"/>
+          <Button Content="Desconectar" Command="{Binding DisconnectCommand}" IsEnabled="{Binding IsConnected}"
+                  Classes="danger"/>
         </StackPanel>
-        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center">
-          <TextBlock Text="{Binding LeftStickX, StringFormat='LX:{0:F2}'}"/>
-          <TextBlock Text="{Binding LeftStickY, StringFormat='LY:{0:F2}'}"/>
-          <TextBlock Text="{Binding RightStickX, StringFormat='RX:{0:F2}'}"/>
-          <TextBlock Text="{Binding RightStickY, StringFormat='RY:{0:F2}'}"/>
-        </StackPanel>
-        <Button Grid.Column="2" Content="PARADA" Command="{Binding EmergencyStopCommand}"
-                Background="Red" Foreground="White" FontWeight="Bold" MinWidth="100"/>
-      </Grid>
-    </Border>
-
-    <!-- Motor Speeds -->
-    <Border Grid.Row="2" BorderBrush="#888" BorderThickness="1" CornerRadius="6" Padding="10">
-      <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="20">
-        <StackPanel>
-          <TextBlock Text="{Binding LeftMotorSpeed, StringFormat='Motor Izquierdo: {0}'}" FontWeight="Bold"/>
-          <TextBlock Text="{Binding LeftMotorSpeed, StringFormat='Velocidad: {0}'}" Margin="0,4,0,0"/>
-        </StackPanel>
-        <StackPanel Grid.Column="2">
-          <TextBlock Text="{Binding RightMotorSpeed, StringFormat='Motor Derecho: {0}'}" FontWeight="Bold"/>
-          <TextBlock Text="{Binding RightMotorSpeed, StringFormat='Velocidad: {0}'}" Margin="0,4,0,0"/>
+        <!-- Row 1: status -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="6">
+          <Border Background="{Binding ConnectionStatusColor}" Classes="statusDot"/>
+          <TextBlock Text="{Binding ConnectionStatus, StringFormat='Estado: {0}'}" 
+                     FontWeight="SemiBold" VerticalAlignment="Center"/>
         </StackPanel>
       </Grid>
     </Border>
 
-    <!-- Telemetry + Log -->
-    <Grid Grid.Row="3" ColumnDefinitions="180,*" ColumnSpacing="6">
-      <Border BorderBrush="#888" BorderThickness="1" CornerRadius="6" Padding="10">
+    <!-- ===== CONTROLLER ===== -->
+    <Border Grid.Row="2" Classes="card">
+      <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <Border Background="{Binding ControllerStatusColor}" Classes="statusDot"/>
+          <TextBlock Text="MANDO PS3" Classes="sectionTitle" Margin="0"/>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="16" HorizontalAlignment="Right">
+          <TextBlock Text="{Binding LeftStickX, StringFormat='LX: {0:F2}'}" FontFamily="Consolas"/>
+          <TextBlock Text="{Binding LeftStickY, StringFormat='LY: {0:F2}'}" FontFamily="Consolas"/>
+          <TextBlock Text="{Binding RightStickX, StringFormat='RX: {0:F2}'}" FontFamily="Consolas"/>
+          <TextBlock Text="{Binding RightStickY, StringFormat='RY: {0:F2}'}" FontFamily="Consolas"/>
+        </StackPanel>
+        <TextBlock Grid.Row="1" Text="{Binding ControllerStatus}" FontWeight="Bold" 
+                   Foreground="{Binding ControllerStatusColor}"/>
+      </Grid>
+    </Border>
+
+    <!-- ===== MOTORS ===== -->
+    <Border Grid.Row="3" Classes="card">
+      <Grid RowDefinitions="Auto,Auto" RowSpacing="10">
+        <!-- Title + STOP -->
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Text="CONTROL DE MOTORES" Classes="sectionTitle"/>
+          <Button Grid.Column="1" Content="PARADA" Command="{Binding EmergencyStopCommand}"
+                  Background="#e94560" Foreground="White" FontWeight="Bold" FontSize="14"
+                  MinWidth="100" MinHeight="30" CornerRadius="6"/>
+        </Grid>
+        <!-- Motor cards -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto,*" ColumnSpacing="12">
+          <!-- Left Motor -->
+          <Border BorderBrush="{DynamicResource ThemeBorderMidColor}" BorderThickness="1" CornerRadius="8" Padding="12">
+            <StackPanel Spacing="6">
+              <TextBlock Text="MOTOR IZQUIERDO" FontWeight="Bold" FontSize="12"/>
+              <Grid Height="22" ColumnDefinitions="*">
+                <Border Background="#222" CornerRadius="4"/>
+                <ProgressBar Value="{Binding LeftMotorForwardValue}" Minimum="0" Maximum="255" 
+                             Foreground="#4ecca3" Background="Transparent" IsVisible="{Binding LeftMotorIsForward}"/>
+                <ProgressBar Value="{Binding LeftMotorReverseAbs}" Minimum="0" Maximum="255" 
+                             Foreground="#e94560" Background="Transparent" IsVisible="{Binding LeftMotorIsReverse}"/>
+              </Grid>
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock Text="{Binding LeftMotorSpeed, StringFormat='Vel: {0}'}" FontSize="22" FontWeight="Bold" FontFamily="Consolas"/>
+                <TextBlock Text="{Binding LeftMotorDirection}" VerticalAlignment="Center" Foreground="#aaa"/>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+          <!-- Separator -->
+          <Border Grid.Column="1" Width="1" Background="{DynamicResource ThemeBorderMidColor}" Margin="4,0"/>
+          <!-- Right Motor -->
+          <Border Grid.Column="2" BorderBrush="{DynamicResource ThemeBorderMidColor}" BorderThickness="1" CornerRadius="8" Padding="12">
+            <StackPanel Spacing="6">
+              <TextBlock Text="MOTOR DERECHO" FontWeight="Bold" FontSize="12"/>
+              <Grid Height="22" ColumnDefinitions="*">
+                <Border Background="#222" CornerRadius="4"/>
+                <ProgressBar Value="{Binding RightMotorForwardValue}" Minimum="0" Maximum="255" 
+                             Foreground="#4ecca3" Background="Transparent" IsVisible="{Binding RightMotorIsForward}"/>
+                <ProgressBar Value="{Binding RightMotorReverseAbs}" Minimum="0" Maximum="255" 
+                             Foreground="#e94560" Background="Transparent" IsVisible="{Binding RightMotorIsReverse}"/>
+              </Grid>
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock Text="{Binding RightMotorSpeed, StringFormat='Vel: {0}'}" FontSize="22" FontWeight="Bold" FontFamily="Consolas"/>
+                <TextBlock Text="{Binding RightMotorDirection}" VerticalAlignment="Center" Foreground="#aaa"/>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+        </Grid>
+      </Grid>
+    </Border>
+
+    <!-- ===== TELEMETRY + LOG ===== -->
+    <Grid Grid.Row="4" ColumnDefinitions="200,*" ColumnSpacing="8">
+      <Border Classes="card">
         <StackPanel Spacing="4">
-          <TextBlock Text="TELEMETRIA" FontWeight="Bold" Margin="0,0,0,6"/>
-          <TextBlock Text="{Binding BatteryLevel, StringFormat='Bateria: {0}'}"/>
-          <TextBlock Text="{Binding Temperature, StringFormat='Temperatura: {0}'}"/>
+          <TextBlock Text="TELEMETRIA" Classes="sectionTitle"/>
+          <Separator Margin="0,0,0,6"/>
+          <TextBlock Text="{Binding BatteryLevel, StringFormat='Bateria: {0}'}" FontSize="14"/>
+          <TextBlock Text="{Binding Temperature, StringFormat='Temperatura: {0}'}" FontSize="14"/>
+          <TextBlock Text="Esperando datos..." Foreground="#666" FontSize="12" Margin="0,12,0,0"
+                     IsVisible="{Binding IsConnected}" />
         </StackPanel>
       </Border>
-      <Border Grid.Column="1" BorderBrush="#888" BorderThickness="1" CornerRadius="6" Padding="6">
-        <ScrollViewer>
-          <ItemsControl ItemsSource="{Binding LogMessages}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate>
-                <TextBlock Text="{Binding}" FontSize="12" FontFamily="Consolas"/>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </ScrollViewer>
+      <Border Grid.Column="1" Classes="card">
+        <Grid RowDefinitions="Auto,*">
+          <TextBlock Text="LOG" Classes="sectionTitle"/>
+          <ScrollViewer Grid.Row="1">
+            <ItemsControl ItemsSource="{Binding LogMessages}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <TextBlock Text="{Binding}" FontSize="12" FontFamily="Consolas" Margin="0,1"/>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Grid>
       </Border>
     </Grid>
 
-    <!-- Status bar -->
-    <Border Grid.Row="4" BorderBrush="#666" BorderThickness="1" CornerRadius="4" Padding="6">
-      <StackPanel Orientation="Horizontal" Spacing="12">
-        <TextBlock Text="{Binding ConnectionStatus, StringFormat='Rover: {0}'}"/>
-        <TextBlock Text="|"/>
-        <TextBlock Text="{Binding ControllerStatus, StringFormat='Mando: {0}'}"/>
+    <!-- ===== STATUS BAR ===== -->
+    <Border Grid.Row="5" BorderBrush="{DynamicResource ThemeBorderMidColor}" BorderThickness="1" 
+            CornerRadius="6" Padding="10,6" Background="{DynamicResource ThemeCardBackground}">
+      <StackPanel Orientation="Horizontal" Spacing="16">
+        <StackPanel Orientation="Horizontal" Spacing="4">
+          <Border Background="{Binding ConnectionStatusColor}" Classes="statusDot"/>
+          <TextBlock Text="{Binding ConnectionStatus, StringFormat='Rover: {0}'}" VerticalAlignment="Center"/>
+        </StackPanel>
+        <Separator Width="1" Height="16" Margin="0"/>
+        <StackPanel Orientation="Horizontal" Spacing="4">
+          <Border Background="{Binding ControllerStatusColor}" Classes="statusDot"/>
+          <TextBlock Text="{Binding ControllerStatus, StringFormat='Mando: {0}'}" VerticalAlignment="Center"/>
+        </StackPanel>
       </StackPanel>
     </Border>
 

@@ -54,12 +54,35 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(CanConnect))]
+        [NotifyPropertyChangedFor(nameof(ConnectionStatusColor))]
+        [NotifyPropertyChangedFor(nameof(ConnectionDot))]
         private bool _isConnected;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ControllerStatusColor))]
+        [NotifyPropertyChangedFor(nameof(ControllerDot))]
         private bool _isControllerConnected;
 
         public bool CanConnect => !IsConnected;
+        public string ConnectionStatusColor => IsConnected ? "#4ecca3" : "#e94560";
+        public string ConnectionDot => IsConnected ? "●" : "●";
+        public string ControllerStatusColor => IsControllerConnected ? "#4ecca3" : "#e94560";
+        public string ControllerDot => IsControllerConnected ? "●" : "●";
+
+        public double LeftMotorBarWidth => Math.Abs(LeftMotorSpeed) / 255.0;
+        public double RightMotorBarWidth => Math.Abs(RightMotorSpeed) / 255.0;
+        public string LeftMotorDirection => LeftMotorSpeed > 0 ? "Adelante" : LeftMotorSpeed < 0 ? "Atras" : "Detenido";
+        public string RightMotorDirection => RightMotorSpeed > 0 ? "Adelante" : RightMotorSpeed < 0 ? "Atras" : "Detenido";
+        public bool LeftMotorActive => LeftMotorSpeed != 0;
+        public bool RightMotorActive => RightMotorSpeed != 0;
+        public int LeftMotorForwardValue => Math.Max(0, LeftMotorSpeed);
+        public int LeftMotorReverseAbs => Math.Abs(Math.Min(0, LeftMotorSpeed));
+        public int RightMotorForwardValue => Math.Max(0, RightMotorSpeed);
+        public int RightMotorReverseAbs => Math.Abs(Math.Min(0, RightMotorSpeed));
+        public bool LeftMotorIsForward => LeftMotorSpeed > 0;
+        public bool LeftMotorIsReverse => LeftMotorSpeed < 0;
+        public bool RightMotorIsForward => RightMotorSpeed > 0;
+        public bool RightMotorIsReverse => RightMotorSpeed < 0;
 
         public ObservableCollection<string> LogMessages { get; } = new();
 
@@ -73,8 +96,28 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
             _controller.OnConnectionChanged += c => _uiContext.Post(_ => OnControllerConnection(c), null);
             _roverClient.OnConnectionChanged += c => _uiContext.Post(_ => OnRoverConnection(c), null);
             _roverClient.OnTelemetryReceived += d => _uiContext.Post(_ => ProcessTelemetry(d), null);
+        }
 
-            _controller.Start();
+        partial void OnLeftMotorSpeedChanged(int value)
+        {
+            OnPropertyChanged(nameof(LeftMotorBarWidth));
+            OnPropertyChanged(nameof(LeftMotorDirection));
+            OnPropertyChanged(nameof(LeftMotorActive));
+            OnPropertyChanged(nameof(LeftMotorForwardValue));
+            OnPropertyChanged(nameof(LeftMotorReverseAbs));
+            OnPropertyChanged(nameof(LeftMotorIsForward));
+            OnPropertyChanged(nameof(LeftMotorIsReverse));
+        }
+
+        partial void OnRightMotorSpeedChanged(int value)
+        {
+            OnPropertyChanged(nameof(RightMotorBarWidth));
+            OnPropertyChanged(nameof(RightMotorDirection));
+            OnPropertyChanged(nameof(RightMotorActive));
+            OnPropertyChanged(nameof(RightMotorForwardValue));
+            OnPropertyChanged(nameof(RightMotorReverseAbs));
+            OnPropertyChanged(nameof(RightMotorIsForward));
+            OnPropertyChanged(nameof(RightMotorIsReverse));
         }
 
         public void SetWindowHandle(IntPtr handle)
@@ -131,13 +174,9 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
             double max = Math.Max(Math.Abs(left), Math.Abs(right));
             if (max > 1.0) { left /= max; right /= max; }
 
-            int leftSpeed = (int)(left * 255);
-            int rightSpeed = (int)(right * 255);
-
-            LeftMotorSpeed = leftSpeed;
-            RightMotorSpeed = rightSpeed;
-
-            SendMotorCommand(leftSpeed, rightSpeed);
+            LeftMotorSpeed = (int)(left * 255);
+            RightMotorSpeed = (int)(right * 255);
+            SendMotorCommand(LeftMotorSpeed, RightMotorSpeed);
         }
 
         private void SendMotorCommand(int left, int right)
@@ -152,15 +191,8 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
         {
             AddLog($"Conectando a {RoverIp}:{RoverPort}...");
             ConnectionStatus = "Conectando...";
-            try
-            {
-                await _roverClient.ConnectAsync(RoverIp, RoverPort);
-            }
-            catch (Exception ex)
-            {
-                AddLog($"Error: {ex.Message}");
-                ConnectionStatus = "Error de conexión";
-            }
+            try { await _roverClient.ConnectAsync(RoverIp, RoverPort); }
+            catch (Exception ex) { AddLog($"Error: {ex.Message}"); ConnectionStatus = "Error"; }
         }
 
         [RelayCommand]
@@ -175,16 +207,14 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
         {
             LeftMotorSpeed = 0;
             RightMotorSpeed = 0;
-            if (_roverClient.IsConnected)
-                _roverClient.SendCommand("0,0");
-            AddLog("¡Parada de emergencia!");
+            if (_roverClient.IsConnected) _roverClient.SendCommand("0,0");
+            AddLog("Parada de emergencia!");
         }
 
         private void AddLog(string message)
         {
             LogMessages.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
-            if (LogMessages.Count > 200)
-                LogMessages.RemoveAt(0);
+            if (LogMessages.Count > 200) LogMessages.RemoveAt(0);
         }
     }
 }
