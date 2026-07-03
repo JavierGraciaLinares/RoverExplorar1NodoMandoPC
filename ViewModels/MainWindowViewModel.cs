@@ -255,9 +255,16 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
             double max = Math.Max(Math.Abs(left), Math.Abs(right));
             if (max > 1.0) { left /= max; right /= max; }
 
-            LeftMotorSpeed = (int)(left * 255);
-            RightMotorSpeed = (int)(right * 255);
+            LeftMotorSpeed = MotorBias((int)(left * 255));
+            RightMotorSpeed = MotorBias((int)(right * 255));
             SendMotorCommand(LeftMotorSpeed, RightMotorSpeed);
+        }
+
+        private static int MotorBias(int speed)
+        {
+            const int min = 55;
+            if (speed == 0) return 0;
+            return Math.Abs(speed) < min ? (speed > 0 ? min : -min) : speed;
         }
 
         private void SendMotorCommand(int left, int right)
