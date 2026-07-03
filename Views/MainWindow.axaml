@@ -133,7 +133,7 @@
     </Style>
   </Window.Styles>
 
-  <Grid RowDefinitions="Auto,Auto,Auto,Auto,1*,Auto" Margin="12" RowSpacing="8">
+  <Grid RowDefinitions="Auto,Auto,Auto,1*,Auto" Margin="12" RowSpacing="8">
 
     <!-- ===== HEADER ===== -->
     <Border Grid.Row="0" Background="{StaticResource AccentHeader}" CornerRadius="10" Padding="16,10">
@@ -177,158 +177,209 @@
       </Grid>
     </Border>
 
-    <!-- ===== CONTROLLER SELECTOR + AXES ===== -->
+    <!-- ===== CONTROLLER SELECTOR ===== -->
     <Border Grid.Row="2" Classes="card">
-      <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
-        <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
-          <TextBlock Text="Controlador:" FontSize="12" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
-          <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableControllers}"
-                    SelectedItem="{Binding SelectedController}"
-                    PlaceholderText="(seleccionar controlador)" MinWidth="250"/>
-          <Button Grid.Column="2" Content="Buscar" Command="{Binding RefreshControllersCommand}"
-                  Background="{StaticResource BgBase}" Foreground="{StaticResource TextPrimary}"
-                  BorderBrush="{StaticResource BorderCard}" BorderThickness="1" CornerRadius="6"
-                  FontSize="12" MinWidth="60"/>
-          <Border Grid.Column="3" Background="{Binding ControllerStatusColor}" Classes="statusDot" Width="12" Height="12" CornerRadius="6" Margin="8,0,0,0"/>
-          <TextBlock Grid.Column="3" Text="{Binding ControllerStatus}" FontSize="13" FontWeight="Bold" 
-                     VerticalAlignment="Center" Margin="20,0,0,0"/>
-        </Grid>
-        <Separator Grid.Row="1" Classes="sep"/>
-        <Grid Grid.Row="2" ColumnDefinitions="*,*,*,*,*,*" ColumnSpacing="12">
-          <StackPanel>
-            <TextBlock Text="LX" FontSize="10" Foreground="{StaticResource TextMuted}"/>
-            <TextBlock Text="{Binding LeftStickX, StringFormat='{}{0:F2}'}" FontSize="13" FontWeight="Bold" FontFamily="Consolas"/>
-          </StackPanel>
-          <StackPanel Grid.Column="1">
-            <TextBlock Text="LY" FontSize="10" Foreground="{StaticResource TextMuted}"/>
-            <TextBlock Text="{Binding LeftStickY, StringFormat='{}{0:F2}'}" FontSize="13" FontWeight="Bold" FontFamily="Consolas"/>
-          </StackPanel>
-          <StackPanel Grid.Column="2">
-            <TextBlock Text="RX" FontSize="10" Foreground="{StaticResource TextMuted}"/>
-            <TextBlock Text="{Binding RightStickX, StringFormat='{}{0:F2}'}" FontSize="13" FontWeight="Bold" FontFamily="Consolas"/>
-          </StackPanel>
-          <StackPanel Grid.Column="3">
-            <TextBlock Text="RY" FontSize="10" Foreground="{StaticResource TextMuted}"/>
-            <TextBlock Text="{Binding RightStickY, StringFormat='{}{0:F2}'}" FontSize="13" FontWeight="Bold" FontFamily="Consolas"/>
-          </StackPanel>
-          <StackPanel Grid.Column="4">
-            <TextBlock Text="L2" FontSize="10" Foreground="{StaticResource TextMuted}"/>
-            <TextBlock Text="{Binding L2Value, StringFormat='{}{0:F2}'}" FontSize="13" FontWeight="Bold" FontFamily="Consolas"/>
-          </StackPanel>
-          <StackPanel Grid.Column="5">
-            <TextBlock Text="R2" FontSize="10" Foreground="{StaticResource TextMuted}"/>
-            <TextBlock Text="{Binding R2Value, StringFormat='{}{0:F2}'}" FontSize="13" FontWeight="Bold" FontFamily="Consolas"/>
-          </StackPanel>
-        </Grid>
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+        <TextBlock Text="Controlador:" FontSize="12" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+        <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableControllers}"
+                  SelectedItem="{Binding SelectedController}"
+                  PlaceholderText="(seleccionar controlador)" MinWidth="250"/>
+        <Button Grid.Column="2" Content="Buscar" Command="{Binding RefreshControllersCommand}"
+                Background="{StaticResource BgBase}" Foreground="{StaticResource TextPrimary}"
+                BorderBrush="{StaticResource BorderCard}" BorderThickness="1" CornerRadius="6"
+                FontSize="12" MinWidth="60"/>
+        <Border Grid.Column="3" Background="{Binding ControllerStatusColor}" Classes="statusDot" Width="12" Height="12" CornerRadius="6" Margin="8,0,0,0"/>
+        <TextBlock Grid.Column="3" Text="{Binding ControllerStatus}" FontSize="13" FontWeight="Bold"
+                   VerticalAlignment="Center" Margin="20,0,0,0"/>
       </Grid>
     </Border>
 
-    <!-- ===== MOTORS ===== -->
-    <Border Grid.Row="3" Classes="card">
-      <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
-        <Grid ColumnDefinitions="*,Auto">
-          <TextBlock Text="CONTROL DE MOTORES" Classes="sectionTitle"/>
-          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
-            <StackPanel Orientation="Horizontal" Spacing="4">
-              <Border Background="{StaticResource Green}" Width="10" Height="10" CornerRadius="3" VerticalAlignment="Center"/>
-              <TextBlock Text="Adelante" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="4">
-              <Border Background="{StaticResource Red}" Width="10" Height="10" CornerRadius="3" VerticalAlignment="Center"/>
-              <TextBlock Text="Atras" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
-            </StackPanel>
-          </StackPanel>
-        </Grid>
-        <Grid Grid.Row="1" ColumnDefinitions="*,Auto,*" ColumnSpacing="12">
-          <Border BorderBrush="{StaticResource BorderLight}" BorderThickness="1" CornerRadius="8" Padding="14">
-            <StackPanel Spacing="2">
-              <TextBlock Text="MOTOR IZQUIERDO" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" LetterSpacing="1"/>
-              <Grid Height="24">
-                <Border Background="{StaticResource BgBase}" CornerRadius="6"/>
-                <ProgressBar Value="{Binding LeftMotorForwardValue}" Minimum="0" Maximum="255" Foreground="{StaticResource Green}" Background="Transparent" Classes="motorBar" IsVisible="{Binding LeftMotorIsForward}"/>
-                <ProgressBar Value="{Binding LeftMotorReverseAbs}" Minimum="0" Maximum="255" Foreground="{StaticResource Red}" Background="Transparent" Classes="motorBar" IsVisible="{Binding LeftMotorIsReverse}"/>
-              </Grid>
-              <Grid ColumnDefinitions="Auto,*,Auto">
-                <TextBlock Text="{Binding LeftMotorSpeed, StringFormat='{}{0}'}" FontSize="28" FontWeight="Black" FontFamily="Consolas" Foreground="{StaticResource TextPrimary}"/>
-                <TextBlock Grid.Column="1" Text="{Binding LeftMotorDirection}" FontSize="13" Foreground="{StaticResource TextSecondary}" Margin="10,0,0,2" VerticalAlignment="Bottom"/>
-                <Border Grid.Column="2" Background="{StaticResource BgBase}" CornerRadius="4" Padding="6,2">
-                  <TextBlock Text="{Binding LeftMotorSpeed, StringFormat='{}PWM {0}'}" FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TextMuted}"/>
-                </Border>
-              </Grid>
-            </StackPanel>
-          </Border>
-          <Border Grid.Column="1" Width="1" Background="{StaticResource BorderLight}" Margin="0,10"/>
-          <Border Grid.Column="2" BorderBrush="{StaticResource BorderLight}" BorderThickness="1" CornerRadius="8" Padding="14">
-            <StackPanel Spacing="2">
-              <TextBlock Text="MOTOR DERECHO" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" LetterSpacing="1"/>
-              <Grid Height="24">
-                <Border Background="{StaticResource BgBase}" CornerRadius="6"/>
-                <ProgressBar Value="{Binding RightMotorForwardValue}" Minimum="0" Maximum="255" Foreground="{StaticResource Green}" Background="Transparent" Classes="motorBar" IsVisible="{Binding RightMotorIsForward}"/>
-                <ProgressBar Value="{Binding RightMotorReverseAbs}" Minimum="0" Maximum="255" Foreground="{StaticResource Red}" Background="Transparent" Classes="motorBar" IsVisible="{Binding RightMotorIsReverse}"/>
-              </Grid>
-              <Grid ColumnDefinitions="Auto,*,Auto">
-                <TextBlock Text="{Binding RightMotorSpeed, StringFormat='{}{0}'}" FontSize="28" FontWeight="Black" FontFamily="Consolas" Foreground="{StaticResource TextPrimary}"/>
-                <TextBlock Grid.Column="1" Text="{Binding RightMotorDirection}" FontSize="13" Foreground="{StaticResource TextSecondary}" Margin="10,0,0,2" VerticalAlignment="Bottom"/>
-                <Border Grid.Column="2" Background="{StaticResource BgBase}" CornerRadius="4" Padding="6,2">
-                  <TextBlock Text="{Binding RightMotorSpeed, StringFormat='{}PWM {0}'}" FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TextMuted}"/>
-                </Border>
-              </Grid>
-            </StackPanel>
-          </Border>
-        </Grid>
-      </Grid>
-    </Border>
+    <!-- ===== TAB CONTROL ===== -->
+    <TabControl Grid.Row="3" SelectedIndex="{Binding SelectedTabIndex}">
 
-    <!-- ===== TELEMETRY + LOG ===== -->
-    <Grid Grid.Row="4" ColumnDefinitions="220,*" ColumnSpacing="8">
-      <Border Classes="card">
-        <StackPanel Spacing="6">
-          <TextBlock Text="TELEMETRIA" Classes="sectionTitle"/>
-          <Separator Classes="sep"/>
-          <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
-            <Border BorderBrush="{StaticResource BorderLight}" BorderThickness="1" CornerRadius="6" Padding="12,8">
-              <Grid ColumnDefinitions="Auto,*">
-                <TextBlock Text="Bateria" FontSize="11" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center"/>
-                <TextBlock Grid.Column="1" Text="{Binding BatteryLevel}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource Green}" HorizontalAlignment="Right"/>
+      <!-- TAB 1: CONTROL (Motores + Telemetria + Log) -->
+      <TabItem Header="CONTROL">
+        <Grid RowDefinitions="Auto,*" RowSpacing="8" Margin="0,8,0,0">
+
+          <!-- Motors -->
+          <Border Classes="card">
+            <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="CONTROL DE MOTORES" Classes="sectionTitle"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                  <StackPanel Orientation="Horizontal" Spacing="4">
+                    <Border Background="{StaticResource Green}" Width="10" Height="10" CornerRadius="3" VerticalAlignment="Center"/>
+                    <TextBlock Text="Adelante" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="4">
+                    <Border Background="{StaticResource Red}" Width="10" Height="10" CornerRadius="3" VerticalAlignment="Center"/>
+                    <TextBlock Text="Atras" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
+                  </StackPanel>
+                </StackPanel>
               </Grid>
-            </Border>
-            <Border Grid.Row="1" BorderBrush="{StaticResource BorderLight}" BorderThickness="1" CornerRadius="6" Padding="12,8">
-              <Grid ColumnDefinitions="Auto,*">
-                <TextBlock Text="Temperatura" FontSize="11" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center"/>
-                <TextBlock Grid.Column="1" Text="{Binding Temperature}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource Orange}" HorizontalAlignment="Right"/>
+              <Grid Grid.Row="1" ColumnDefinitions="*,Auto,*" ColumnSpacing="12">
+                <Border BorderBrush="{StaticResource BorderLight}" BorderThickness="1" CornerRadius="8" Padding="14">
+                  <StackPanel Spacing="2">
+                    <TextBlock Text="MOTOR IZQUIERDO" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" LetterSpacing="1"/>
+                    <Grid Height="24">
+                      <Border Background="{StaticResource BgBase}" CornerRadius="6"/>
+                      <ProgressBar Value="{Binding LeftMotorForwardValue}" Minimum="0" Maximum="255" Foreground="{StaticResource Green}" Background="Transparent" Classes="motorBar" IsVisible="{Binding LeftMotorIsForward}"/>
+                      <ProgressBar Value="{Binding LeftMotorReverseAbs}" Minimum="0" Maximum="255" Foreground="{StaticResource Red}" Background="Transparent" Classes="motorBar" IsVisible="{Binding LeftMotorIsReverse}"/>
+                    </Grid>
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                      <TextBlock Text="{Binding LeftMotorSpeed, StringFormat='{}{0}'}" FontSize="28" FontWeight="Black" FontFamily="Consolas" Foreground="{StaticResource TextPrimary}"/>
+                      <TextBlock Grid.Column="1" Text="{Binding LeftMotorDirection}" FontSize="13" Foreground="{StaticResource TextSecondary}" Margin="10,0,0,2" VerticalAlignment="Bottom"/>
+                      <Border Grid.Column="2" Background="{StaticResource BgBase}" CornerRadius="4" Padding="6,2">
+                        <TextBlock Text="{Binding LeftMotorSpeed, StringFormat='{}PWM {0}'}" FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TextMuted}"/>
+                      </Border>
+                    </Grid>
+                  </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Width="1" Background="{StaticResource BorderLight}" Margin="0,10"/>
+                <Border Grid.Column="2" BorderBrush="{StaticResource BorderLight}" BorderThickness="1" CornerRadius="8" Padding="14">
+                  <StackPanel Spacing="2">
+                    <TextBlock Text="MOTOR DERECHO" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" LetterSpacing="1"/>
+                    <Grid Height="24">
+                      <Border Background="{StaticResource BgBase}" CornerRadius="6"/>
+                      <ProgressBar Value="{Binding RightMotorForwardValue}" Minimum="0" Maximum="255" Foreground="{StaticResource Green}" Background="Transparent" Classes="motorBar" IsVisible="{Binding RightMotorIsForward}"/>
+                      <ProgressBar Value="{Binding RightMotorReverseAbs}" Minimum="0" Maximum="255" Foreground="{StaticResource Red}" Background="Transparent" Classes="motorBar" IsVisible="{Binding RightMotorIsReverse}"/>
+                    </Grid>
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                      <TextBlock Text="{Binding RightMotorSpeed, StringFormat='{}{0}'}" FontSize="28" FontWeight="Black" FontFamily="Consolas" Foreground="{StaticResource TextPrimary}"/>
+                      <TextBlock Grid.Column="1" Text="{Binding RightMotorDirection}" FontSize="13" Foreground="{StaticResource TextSecondary}" Margin="10,0,0,2" VerticalAlignment="Bottom"/>
+                      <Border Grid.Column="2" Background="{StaticResource BgBase}" CornerRadius="4" Padding="6,2">
+                        <TextBlock Text="{Binding RightMotorSpeed, StringFormat='{}PWM {0}'}" FontSize="11" FontFamily="Consolas" Foreground="{StaticResource TextMuted}"/>
+                      </Border>
+                    </Grid>
+                  </StackPanel>
+                </Border>
               </Grid>
+            </Grid>
+          </Border>
+
+          <!-- Telemetry + Log -->
+          <Grid Grid.Row="1" ColumnDefinitions="220,*" ColumnSpacing="8">
+            <Border Classes="card">
+              <StackPanel Spacing="6">
+                <TextBlock Text="TELEMETRIA" Classes="sectionTitle"/>
+                <Separator Classes="sep"/>
+                <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                  <Border BorderBrush="{StaticResource BorderLight}" BorderThickness="1" CornerRadius="6" Padding="12,8">
+                    <Grid ColumnDefinitions="Auto,*">
+                      <TextBlock Text="Bateria" FontSize="11" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center"/>
+                      <TextBlock Grid.Column="1" Text="{Binding BatteryLevel}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource Green}" HorizontalAlignment="Right"/>
+                    </Grid>
+                  </Border>
+                  <Border Grid.Row="1" BorderBrush="{StaticResource BorderLight}" BorderThickness="1" CornerRadius="6" Padding="12,8">
+                    <Grid ColumnDefinitions="Auto,*">
+                      <TextBlock Text="Temperatura" FontSize="11" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center"/>
+                      <TextBlock Grid.Column="1" Text="{Binding Temperature}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource Orange}" HorizontalAlignment="Right"/>
+                    </Grid>
+                  </Border>
+                  <Border Grid.Row="2" BorderBrush="{StaticResource BorderLight}" BorderThickness="1" CornerRadius="6" Padding="12,8">
+                    <Grid ColumnDefinitions="Auto,*">
+                      <TextBlock Text="Estado" FontSize="11" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center"/>
+                      <TextBlock Grid.Column="1" Text="{Binding ConnectionStatus}" FontSize="14" FontWeight="SemiBold" Foreground="{Binding ConnectionStatusColor}" HorizontalAlignment="Right"/>
+                    </Grid>
+                  </Border>
+                </Grid>
+                <TextBlock Text="Esperando telemetria del rover..." FontSize="11" Foreground="{StaticResource TextMuted}" Margin="0,6,0,0"/>
+              </StackPanel>
             </Border>
-            <Border Grid.Row="2" BorderBrush="{StaticResource BorderLight}" BorderThickness="1" CornerRadius="6" Padding="12,8">
-              <Grid ColumnDefinitions="Auto,*">
-                <TextBlock Text="Estado" FontSize="11" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center"/>
-                <TextBlock Grid.Column="1" Text="{Binding ConnectionStatus}" FontSize="14" FontWeight="SemiBold" Foreground="{Binding ConnectionStatusColor}" HorizontalAlignment="Right"/>
+            <Border Grid.Column="1" Classes="card">
+              <Grid RowDefinitions="Auto,*">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="LOG DE EVENTOS" Classes="sectionTitle"/>
+                  <TextBlock Grid.Column="1" Text="{Binding LogMessages.Count, StringFormat='{}{0} eventos'}" FontSize="11" Foreground="{StaticResource TextMuted}" VerticalAlignment="Bottom"/>
+                </Grid>
+                <ScrollViewer Grid.Row="1" Background="{StaticResource BgBase}" CornerRadius="6" Padding="8">
+                  <ItemsControl ItemsSource="{Binding LogMessages}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding}" FontSize="12" FontFamily="Consolas" Foreground="{StaticResource TextSecondary}" Margin="0,1"/>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </ScrollViewer>
               </Grid>
             </Border>
           </Grid>
-          <TextBlock Text="Esperando telemetria del rover..." FontSize="11" Foreground="{StaticResource TextMuted}" Margin="0,6,0,0"/>
-        </StackPanel>
-      </Border>
-      <Border Grid.Column="1" Classes="card">
-        <Grid RowDefinitions="Auto,*">
-          <Grid ColumnDefinitions="*,Auto">
-            <TextBlock Text="LOG DE EVENTOS" Classes="sectionTitle"/>
-            <TextBlock Grid.Column="1" Text="{Binding LogMessages.Count, StringFormat='{}{0} eventos'}" FontSize="11" Foreground="{StaticResource TextMuted}" VerticalAlignment="Bottom"/>
-          </Grid>
-          <ScrollViewer Grid.Row="1" Background="{StaticResource BgBase}" CornerRadius="6" Padding="8">
-            <ItemsControl ItemsSource="{Binding LogMessages}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                  <TextBlock Text="{Binding}" FontSize="12" FontFamily="Consolas" Foreground="{StaticResource TextSecondary}" Margin="0,1"/>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-          </ScrollViewer>
+
         </Grid>
-      </Border>
-    </Grid>
+      </TabItem>
+
+      <!-- TAB 2: MANDO (Ejes + Botones que se iluminan) -->
+      <TabItem Header="MANDO">
+        <ScrollViewer Margin="0,8,0,0">
+          <StackPanel Spacing="8">
+
+            <!-- Axes -->
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Text="EJES DEL MANDO" Classes="sectionTitle"/>
+                <Separator Classes="sep"/>
+                <Grid ColumnDefinitions="*,*,*,*,*,*" ColumnSpacing="16">
+                  <StackPanel>
+                    <TextBlock Text="LX" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+                    <TextBlock Text="{Binding LeftStickX, StringFormat='{}{0:F2}'}" FontSize="16" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource Blue}"/>
+                  </StackPanel>
+                  <StackPanel Grid.Column="1">
+                    <TextBlock Text="LY" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+                    <TextBlock Text="{Binding LeftStickY, StringFormat='{}{0:F2}'}" FontSize="16" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource Blue}"/>
+                  </StackPanel>
+                  <StackPanel Grid.Column="2">
+                    <TextBlock Text="RX" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+                    <TextBlock Text="{Binding RightStickX, StringFormat='{}{0:F2}'}" FontSize="16" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource Blue}"/>
+                  </StackPanel>
+                  <StackPanel Grid.Column="3">
+                    <TextBlock Text="RY" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+                    <TextBlock Text="{Binding RightStickY, StringFormat='{}{0:F2}'}" FontSize="16" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource Blue}"/>
+                  </StackPanel>
+                  <StackPanel Grid.Column="4">
+                    <TextBlock Text="L2" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+                    <TextBlock Text="{Binding L2Value, StringFormat='{}{0:F2}'}" FontSize="16" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource Blue}"/>
+                  </StackPanel>
+                  <StackPanel Grid.Column="5">
+                    <TextBlock Text="R2" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+                    <TextBlock Text="{Binding R2Value, StringFormat='{}{0:F2}'}" FontSize="16" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource Blue}"/>
+                  </StackPanel>
+                </Grid>
+              </StackPanel>
+            </Border>
+
+            <!-- Buttons -->
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Text="BOTONES" Classes="sectionTitle"/>
+                <Separator Classes="sep"/>
+                <ItemsControl ItemsSource="{Binding ControllerButtons}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <WrapPanel HorizontalAlignment="Center"/>
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="models:ControllerButtonState">
+                      <Border Width="72" Height="40" Margin="4" CornerRadius="8"
+                              BorderBrush="{StaticResource BorderCard}" BorderThickness="1"
+                              Background="{Binding Pressed, Converter={StaticResource BtnColor}}">
+                        <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="Bold"
+                                   Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
+
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+    </TabControl>
 
     <!-- ===== STATUS BAR ===== -->
-    <Border Grid.Row="5" Background="{StaticResource BgCardAlt}" BorderBrush="{StaticResource BorderLight}"
+    <Border Grid.Row="4" Background="{StaticResource BgCardAlt}" BorderBrush="{StaticResource BorderLight}"
             BorderThickness="1" CornerRadius="6" Padding="14,8">
       <Grid ColumnDefinitions="Auto,1*,Auto">
         <StackPanel Orientation="Horizontal" Spacing="6">
