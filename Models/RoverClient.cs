@@ -1,6 +1,5 @@
 using System;
-using System.IO;
-using System.Net.Sockets;
+using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,26 +8,24 @@ namespace RoverExplorer1NodoMandoPC.Models
 {
     public class RoverClient : IDisposable
     {
-        private TcpClient? _client;
-        private StreamWriter? _writer;
-        private StreamReader? _reader;
+        private ClientWebSocket? _ws;
         private CancellationTokenSource? _cts;
         private readonly object _lock = new();
 
         public event Action<string>? OnTelemetryReceived;
         public event Action<bool>? OnConnectionChanged;
 
-        public bool IsConnected => _client?.Connected ?? false;
+        public bool IsConnected => _ws?.State == WebSocketState.Open;
 
         public async Task ConnectAsync(string ip, int port)
         {
             Disconnect();
             _cts = new CancellationTokenSource();
-            _client = new TcpClient();
-            await _client.ConnectAsync(ip, port);
-            var stream = _client.GetStream();
-            _writer = new StreamWriter(stream, Encoding.ASCII) { AutoFlush = true, NewLine = "\n" };
-            _reader = new StreamReader(stream, Encoding.ASCII);
+            _ws = new ClientWebSocket();
+
+            var uri = new Uri($"ws://{ip}:{port}");
+            await _ws.ConnectAsync(uri, _cts.Token);
+
             OnConnectionChanged?.Invoke(true);
             _ = Task.Run(() => ReceiveLoop(_cts.Token));
         }
@@ -38,42 +35,51 @@ namespace RoverExplorer1NodoMandoPC.Models
             _cts?.Cancel();
             lock (_lock)
             {
-                _writer?.Close();
-                _reader?.Close();
-                _client?.Close();
-                _writer = null;
-                _reader = null;
-                _client = null;
+                if (_ws?.State == WebSocketState.Open)
+                {
+                    try { _ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).GetAwaiter().GetResult(); }
+                    catch { }
+                }
+                _ws?.Dispose();
+                _ws = null;
             }
             OnConnectionChanged?.Invoke(false);
         }
 
         public void SendCommand(string command)
         {
-            lock (_lock)
+            if (_ws?.State != WebSocketState.Open) return;
+            _ = SendAsync(command);
+        }
+
+        private async Task SendAsync(string command)
+        {
+            try
             {
-                _writer?.WriteLine(command);
+                var bytes = Encoding.UTF8.GetBytes(command);
+                await _ws!.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
             }
+            catch { }
         }
 
         private async Task ReceiveLoop(CancellationToken token)
         {
-            while (!token.IsCancellationRequested && _reader != null)
+            var buffer = new byte[4096];
+            while (!token.IsCancellationRequested && _ws?.State == WebSocketState.Open)
             {
                 try
                 {
-                    var line = await _reader.ReadLineAsync(token);
-                    if (line == null) break;
-                    OnTelemetryReceived?.Invoke(line);
+                    var result = await _ws.ReceiveAsync(new Memory<byte>(buffer), token);
+                    if (result.MessageType == WebSocketMessageType.Close) break;
+
+                    var text = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    OnTelemetryReceived?.Invoke(text);
                 }
                 catch (OperationCanceledException) { break; }
-                catch
-                {
-                    if (!token.IsCancellationRequested)
-                        OnConnectionChanged?.Invoke(false);
-                    break;
-                }
+                catch { if (!token.IsCancellationRequested) break; }
             }
+            if (!token.IsCancellationRequested)
+                OnConnectionChanged?.Invoke(false);
         }
 
         public void Dispose() => Disconnect();
