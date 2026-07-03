@@ -98,6 +98,8 @@ namespace RoverExplorer1NodoMandoPC.Models
         {
             _cts?.Cancel();
             try { _pollTask?.Wait(1000); } catch { }
+            _cts = null;
+            _pollTask = null;
             ReleaseJoystick();
             SetConnected(false);
         }
