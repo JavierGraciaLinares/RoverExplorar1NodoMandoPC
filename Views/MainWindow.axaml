@@ -372,6 +372,16 @@
               </StackPanel>
             </Border>
 
+            <!-- Raw Axes Debug -->
+            <Border Classes="card">
+              <StackPanel Spacing="6">
+                <TextBlock Text="VALORES CRUDOS (debug)" Classes="sectionTitle"/>
+                <Separator Classes="sep"/>
+                <TextBlock Text="{Binding RawAxesInfo}" FontSize="11" FontFamily="Consolas"
+                           Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+              </StackPanel>
+            </Border>
+
           </StackPanel>
         </ScrollViewer>
       </TabItem>

@@ -102,6 +102,9 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
         public double L2Progress => Math.Abs(L2Value);
         public double R2Progress => Math.Abs(R2Value);
 
+        [ObservableProperty]
+        private string _rawAxesInfo = "";
+
         public ObservableCollection<string> LogMessages { get; } = new();
         public ObservableCollection<ControllerButtonState> ControllerButtons { get; } = new();
         public ObservableCollection<ControllerDeviceInfo> AvailableControllers { get; } = new();
@@ -125,7 +128,7 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
             string[] names = ["Select", "L3", "R3", "Start",
                               "D-Up", "D-Right", "D-Down", "D-Left",
                               "L2", "R2", "L1", "R1",
-                              "Y", "B", "A", "X", "Home"];
+                              "Triang", "Circulo", "Cruz", "Cuadrado", "Home"];
             for (int i = 0; i < names.Length; i++)
                 ControllerButtons.Add(new ControllerButtonState(i, names[i]));
         }
@@ -224,6 +227,7 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
             RightStickY = Math.Round(state.RightStickY, 2);
             L2Value = Math.Round(state.L2, 2);
             R2Value = Math.Round(state.R2, 2);
+            RawAxesInfo = state.RawDebugInfo;
 
             for (int i = 0; i < state.Buttons.Length && i < ControllerButtons.Count; i++)
                 ControllerButtons[i].Pressed = state.Buttons[i];

@@ -12,6 +12,7 @@ namespace RoverExplorer1NodoMandoPC.Models
         public double RightStickX, RightStickY;
         public double L2, R2;
         public bool[] Buttons = [];
+        public string RawDebugInfo = "";
     }
 
     public class Ps3Controller : IDisposable
@@ -134,6 +135,25 @@ namespace RoverExplorer1NodoMandoPC.Models
                     _joystick.Poll();
                     var state = _joystick.GetCurrentState();
 
+                    var buttons = (bool[])state.Buttons.Clone();
+
+                    int pov = state.PointOfViewControllers.Length > 0
+                        ? state.PointOfViewControllers[0] : -1;
+                    if (pov > 36000) pov = -1;
+
+                    if (pov >= 0)
+                    {
+                        double angle = pov / 100.0;
+                        const double tol = 44.0;
+                        buttons[4] = angle > (360.0 - tol) || angle < tol;
+                        buttons[5] = angle > (90.0 - tol) && angle < (90.0 + tol);
+                        buttons[6] = angle > (180.0 - tol) && angle < (180.0 + tol);
+                        buttons[7] = angle > (270.0 - tol) && angle < (270.0 + tol);
+                    }
+
+                    string sliders = state.Sliders.Length > 0
+                        ? string.Join(", ", state.Sliders) : "(none)";
+
                     var cs = new ControllerState
                     {
                         LeftStickX = NormalizeAxis(state.X),
@@ -142,7 +162,10 @@ namespace RoverExplorer1NodoMandoPC.Models
                         RightStickY = NormalizeAxis(state.RotationZ),
                         L2 = state.Sliders.Length > 0 ? NormalizeAxis(state.Sliders[0]) : 0,
                         R2 = state.Sliders.Length > 1 ? NormalizeAxis(state.Sliders[1]) : 0,
-                        Buttons = (bool[])state.Buttons.Clone()
+                        Buttons = buttons,
+                        RawDebugInfo = $"X:{state.X} Y:{state.Y} Z:{state.Z} " +
+                            $"RotX:{state.RotationX} RotY:{state.RotationY} RotZ:{state.RotationZ} " +
+                            $"Sliders:[{sliders}] POV:{pov}"
                     };
 
                     OnStateChanged?.Invoke(cs);
