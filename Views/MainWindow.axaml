@@ -1,0 +1,95 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RoverExplorer1NodoMandoPC.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        x:Class="RoverExplorer1NodoMandoPC.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Rover Explorer - Nodo de Mando"
+        Icon="/Assets/avalonia-logo.ico"
+        MinWidth="700" MinHeight="500">
+
+  <Grid RowDefinitions="Auto,Auto,Auto,1*,Auto" Margin="8" RowSpacing="6">
+
+    <!-- Connection -->
+    <Border BorderBrush="#888" BorderThickness="1" CornerRadius="6" Padding="10">
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <TextBlock Text="Rover IP:" VerticalAlignment="Center"/>
+        <TextBox Text="{Binding RoverIp}" Width="130"/>
+        <TextBlock Text="Puerto:" VerticalAlignment="Center"/>
+        <TextBox Text="{Binding RoverPort}" Width="70"/>
+        <Button Content="Conectar" Command="{Binding ConnectCommand}" IsEnabled="{Binding CanConnect}"
+                MinWidth="80"/>
+        <Button Content="Desconectar" Command="{Binding DisconnectCommand}" IsEnabled="{Binding IsConnected}"
+                MinWidth="80"/>
+        <TextBlock Text="{Binding ConnectionStatus, StringFormat='Estado: {0}'}" VerticalAlignment="Center"
+                   FontWeight="Bold" Margin="10,0,0,0"/>
+      </StackPanel>
+    </Border>
+
+    <!-- Controller Status -->
+    <Border Grid.Row="1" BorderBrush="#888" BorderThickness="1" CornerRadius="6" Padding="10">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <StackPanel Orientation="Horizontal" Spacing="4">
+          <TextBlock Text="MANDO PS3:" FontWeight="Bold" VerticalAlignment="Center"/>
+          <TextBlock Text="{Binding ControllerStatus}" VerticalAlignment="Center"/>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center">
+          <TextBlock Text="{Binding LeftStickX, StringFormat='LX:{0:F2}'}"/>
+          <TextBlock Text="{Binding LeftStickY, StringFormat='LY:{0:F2}'}"/>
+          <TextBlock Text="{Binding RightStickX, StringFormat='RX:{0:F2}'}"/>
+          <TextBlock Text="{Binding RightStickY, StringFormat='RY:{0:F2}'}"/>
+        </StackPanel>
+        <Button Grid.Column="2" Content="PARADA" Command="{Binding EmergencyStopCommand}"
+                Background="Red" Foreground="White" FontWeight="Bold" MinWidth="100"/>
+      </Grid>
+    </Border>
+
+    <!-- Motor Speeds -->
+    <Border Grid.Row="2" BorderBrush="#888" BorderThickness="1" CornerRadius="6" Padding="10">
+      <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="20">
+        <StackPanel>
+          <TextBlock Text="{Binding LeftMotorSpeed, StringFormat='Motor Izquierdo: {0}'}" FontWeight="Bold"/>
+          <TextBlock Text="{Binding LeftMotorSpeed, StringFormat='Velocidad: {0}'}" Margin="0,4,0,0"/>
+        </StackPanel>
+        <StackPanel Grid.Column="2">
+          <TextBlock Text="{Binding RightMotorSpeed, StringFormat='Motor Derecho: {0}'}" FontWeight="Bold"/>
+          <TextBlock Text="{Binding RightMotorSpeed, StringFormat='Velocidad: {0}'}" Margin="0,4,0,0"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- Telemetry + Log -->
+    <Grid Grid.Row="3" ColumnDefinitions="180,*" ColumnSpacing="6">
+      <Border BorderBrush="#888" BorderThickness="1" CornerRadius="6" Padding="10">
+        <StackPanel Spacing="4">
+          <TextBlock Text="TELEMETRIA" FontWeight="Bold" Margin="0,0,0,6"/>
+          <TextBlock Text="{Binding BatteryLevel, StringFormat='Bateria: {0}'}"/>
+          <TextBlock Text="{Binding Temperature, StringFormat='Temperatura: {0}'}"/>
+        </StackPanel>
+      </Border>
+      <Border Grid.Column="1" BorderBrush="#888" BorderThickness="1" CornerRadius="6" Padding="6">
+        <ScrollViewer>
+          <ItemsControl ItemsSource="{Binding LogMessages}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding}" FontSize="12" FontFamily="Consolas"/>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Border>
+    </Grid>
+
+    <!-- Status bar -->
+    <Border Grid.Row="4" BorderBrush="#666" BorderThickness="1" CornerRadius="4" Padding="6">
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <TextBlock Text="{Binding ConnectionStatus, StringFormat='Rover: {0}'}"/>
+        <TextBlock Text="|"/>
+        <TextBlock Text="{Binding ControllerStatus, StringFormat='Mando: {0}'}"/>
+      </StackPanel>
+    </Border>
+
+  </Grid>
+</Window>
