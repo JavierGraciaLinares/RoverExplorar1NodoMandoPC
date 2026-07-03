@@ -15,6 +15,7 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
         private readonly SynchronizationContext _uiContext;
         private DateTime _lastCommandSent = DateTime.MinValue;
         private static readonly TimeSpan CommandInterval = TimeSpan.FromMilliseconds(50);
+        private ControllerState? _lastState;
 
         [ObservableProperty]
         private string _roverIp = "192.168.1.100";
@@ -47,6 +48,12 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
         private double _rightStickY;
 
         [ObservableProperty]
+        private double _l2Value;
+
+        [ObservableProperty]
+        private double _r2Value;
+
+        [ObservableProperty]
         private string _batteryLevel = "--";
 
         [ObservableProperty]
@@ -63,10 +70,13 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
         [NotifyPropertyChangedFor(nameof(ControllerDot))]
         private bool _isControllerConnected;
 
+        [ObservableProperty]
+        private int _selectedTabIndex;
+
         public bool CanConnect => !IsConnected;
-        public string ConnectionStatusColor => IsConnected ? "#4ecca3" : "#e94560";
+        public string ConnectionStatusColor => IsConnected ? "#3fb950" : "#da3633";
         public string ConnectionDot => IsConnected ? "●" : "●";
-        public string ControllerStatusColor => IsControllerConnected ? "#4ecca3" : "#e94560";
+        public string ControllerStatusColor => IsControllerConnected ? "#3fb950" : "#da3633";
         public string ControllerDot => IsControllerConnected ? "●" : "●";
 
         public double LeftMotorBarWidth => Math.Abs(LeftMotorSpeed) / 255.0;
@@ -84,7 +94,11 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
         public bool RightMotorIsForward => RightMotorSpeed > 0;
         public bool RightMotorIsReverse => RightMotorSpeed < 0;
 
+        public double L2Progress => Math.Abs(L2Value);
+        public double R2Progress => Math.Abs(R2Value);
+
         public ObservableCollection<string> LogMessages { get; } = new();
+        public ObservableCollection<ControllerButtonState> ControllerButtons { get; } = new();
 
         public MainWindowViewModel()
         {
@@ -96,6 +110,18 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
             _controller.OnConnectionChanged += c => _uiContext.Post(_ => OnControllerConnection(c), null);
             _roverClient.OnConnectionChanged += c => _uiContext.Post(_ => OnRoverConnection(c), null);
             _roverClient.OnTelemetryReceived += d => _uiContext.Post(_ => ProcessTelemetry(d), null);
+
+            InitButtons();
+        }
+
+        private void InitButtons()
+        {
+            string[] names = ["Select", "L3", "R3", "Start",
+                              "D-Up", "D-Right", "D-Down", "D-Left",
+                              "L2", "R2", "L1", "R1",
+                              "Y", "B", "A", "X", "Home"];
+            for (int i = 0; i < names.Length; i++)
+                ControllerButtons.Add(new ControllerButtonState(i, names[i]));
         }
 
         partial void OnLeftMotorSpeedChanged(int value)
@@ -119,6 +145,9 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
             OnPropertyChanged(nameof(RightMotorIsForward));
             OnPropertyChanged(nameof(RightMotorIsReverse));
         }
+
+        partial void OnL2ValueChanged(double value) => OnPropertyChanged(nameof(L2Progress));
+        partial void OnR2ValueChanged(double value) => OnPropertyChanged(nameof(R2Progress));
 
         public void SetWindowHandle(IntPtr handle)
         {
@@ -154,10 +183,17 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
 
         private void ProcessControllerState(ControllerState state)
         {
+            _lastState = state;
+
             LeftStickX = Math.Round(state.LeftStickX, 2);
             LeftStickY = Math.Round(state.LeftStickY, 2);
             RightStickX = Math.Round(state.RightStickX, 2);
             RightStickY = Math.Round(state.RightStickY, 2);
+            L2Value = Math.Round(state.L2, 2);
+            R2Value = Math.Round(state.R2, 2);
+
+            for (int i = 0; i < state.Buttons.Length && i < ControllerButtons.Count; i++)
+                ControllerButtons[i].Pressed = state.Buttons[i];
 
             if (state.Buttons.Length > 14 && state.Buttons[14])
             {
