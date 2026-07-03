@@ -360,11 +360,15 @@
                   </ItemsControl.ItemsPanel>
                   <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="models:ControllerButtonState">
-                      <Border Width="72" Height="40" Margin="4" CornerRadius="8"
+                      <Border Width="76" Height="44" Margin="4" CornerRadius="8"
                               BorderBrush="{StaticResource BorderCard}" BorderThickness="1"
                               Background="{Binding Pressed, Converter={StaticResource BtnColor}}">
-                        <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="Bold"
-                                   Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                          <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="Bold"
+                                     Foreground="White" HorizontalAlignment="Center"/>
+                          <TextBlock Text="{Binding Index, StringFormat='(#{{0}})'}" FontSize="9"
+                                     Foreground="{StaticResource TextMuted}" HorizontalAlignment="Center"/>
+                        </StackPanel>
                       </Border>
                     </DataTemplate>
                   </ItemsControl.ItemTemplate>
