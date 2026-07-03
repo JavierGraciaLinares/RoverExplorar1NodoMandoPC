@@ -230,9 +230,9 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
             _lastState = state;
 
             LeftStickX = Math.Round(state.LeftStickX, 2);
-            LeftStickY = Math.Round(state.LeftStickY, 2);
+            LeftStickY = Math.Round(-state.LeftStickY, 2);
             RightStickX = Math.Round(state.RightStickX, 2);
-            RightStickY = Math.Round(state.RightStickY, 2);
+            RightStickY = Math.Round(-state.RightStickY, 2);
             L2Value = Math.Round(state.L2, 2);
             R2Value = Math.Round(state.R2, 2);
             RawAxesInfo = state.RawDebugInfo;
