@@ -73,11 +73,16 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
         [ObservableProperty]
         private int _selectedTabIndex;
 
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(SelectedDeviceDisplay))]
+        private ControllerDeviceInfo? _selectedController;
+
         public bool CanConnect => !IsConnected;
         public string ConnectionStatusColor => IsConnected ? "#3fb950" : "#da3633";
         public string ConnectionDot => IsConnected ? "●" : "●";
         public string ControllerStatusColor => IsControllerConnected ? "#3fb950" : "#da3633";
         public string ControllerDot => IsControllerConnected ? "●" : "●";
+        public string SelectedDeviceDisplay => SelectedController != null ? SelectedController.Name : "(seleccionar controlador)";
 
         public double LeftMotorBarWidth => Math.Abs(LeftMotorSpeed) / 255.0;
         public double RightMotorBarWidth => Math.Abs(RightMotorSpeed) / 255.0;
@@ -99,6 +104,7 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
 
         public ObservableCollection<string> LogMessages { get; } = new();
         public ObservableCollection<ControllerButtonState> ControllerButtons { get; } = new();
+        public ObservableCollection<ControllerDeviceInfo> AvailableControllers { get; } = new();
 
         public MainWindowViewModel()
         {
@@ -149,9 +155,36 @@ namespace RoverExplorer1NodoMandoPC.ViewModels
         partial void OnL2ValueChanged(double value) => OnPropertyChanged(nameof(L2Progress));
         partial void OnR2ValueChanged(double value) => OnPropertyChanged(nameof(R2Progress));
 
+        partial void OnSelectedControllerChanged(ControllerDeviceInfo? value)
+        {
+            OnPropertyChanged(nameof(SelectedDeviceDisplay));
+            if (value == null) return;
+            bool ok = _controller.TrySelectDevice(value.InstanceGuid);
+            if (ok)
+            {
+                _controller.Start();
+                AddLog($"Mando seleccionado: {value.Name}");
+            }
+            else
+            {
+                AddLog($"Error al conectar: {value.Name}");
+                ControllerStatus = "Error";
+            }
+        }
+
         public void SetWindowHandle(IntPtr handle)
         {
             _controller.SetWindowHandle(handle);
+            RefreshControllers();
+        }
+
+        [RelayCommand]
+        private void RefreshControllers()
+        {
+            AvailableControllers.Clear();
+            foreach (var dev in _controller.EnumerateDevices())
+                AvailableControllers.Add(dev);
+            AddLog($"Dispositivos encontrados: {AvailableControllers.Count}");
         }
 
         private void OnControllerConnection(bool connected)

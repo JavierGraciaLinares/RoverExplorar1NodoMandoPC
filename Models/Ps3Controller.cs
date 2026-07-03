@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SharpDX.DirectInput;
@@ -22,17 +23,68 @@ namespace RoverExplorer1NodoMandoPC.Models
         private IntPtr _windowHandle;
         private bool _handleReady;
         private int _pollCount;
+        private bool _manualSelection;
+        private Guid? _selectedGuid;
 
         public event Action<ControllerState>? OnStateChanged;
         public event Action<bool>? OnConnectionChanged;
 
         public bool IsConnected { get; private set; }
+        public string? CurrentDeviceName { get; private set; }
 
         public void SetWindowHandle(IntPtr handle)
         {
             _windowHandle = handle;
             _handleReady = true;
-            Start();
+            if (!_manualSelection) Start();
+        }
+
+        public List<ControllerDeviceInfo> EnumerateDevices()
+        {
+            var list = new List<ControllerDeviceInfo>();
+            foreach (var dev in _directInput.GetDevices())
+            {
+                list.Add(new ControllerDeviceInfo
+                {
+                    Name = dev.ProductName,
+                    InstanceGuid = dev.InstanceGuid
+                });
+            }
+            return list;
+        }
+
+        public bool TrySelectDevice(Guid guid)
+        {
+            Stop();
+            _manualSelection = true;
+            _selectedGuid = guid;
+
+            if (!_handleReady) return true;
+
+            return TrySelectDeviceInternal(guid);
+        }
+
+        private bool TrySelectDeviceInternal(Guid guid)
+        {
+            try
+            {
+                ReleaseJoystick();
+                var joystick = new Joystick(_directInput, guid);
+                joystick.SetCooperativeLevel(_windowHandle,
+                    CooperativeLevel.NonExclusive | CooperativeLevel.Background);
+                joystick.Properties.AxisMode = DeviceAxisMode.Absolute;
+                joystick.Acquire();
+                _joystick = joystick;
+                CurrentDeviceName = joystick.Properties.ProductName;
+                System.Diagnostics.Debug.WriteLine($"Mando: {CurrentDeviceName}");
+                return true;
+            }
+            catch
+            {
+                _joystick?.Dispose();
+                _joystick = null;
+                return false;
+            }
         }
 
         public void Start()
@@ -64,7 +116,11 @@ namespace RoverExplorer1NodoMandoPC.Models
 
                     if (_joystick == null || _joystick.IsDisposed)
                     {
-                        FindAndAcquireJoystick();
+                        if (_manualSelection && _selectedGuid.HasValue)
+                            TrySelectDeviceInternal(_selectedGuid.Value);
+                        else
+                            FindAndAcquireJoystick();
+
                         if (_joystick == null)
                         {
                             SetConnected(false);
@@ -110,46 +166,30 @@ namespace RoverExplorer1NodoMandoPC.Models
 
         private void FindAndAcquireJoystick()
         {
-            var devices = _directInput.GetDevices();
-            DeviceInstance found = default!;
-            bool foundDevice = false;
-
-            foreach (var dev in devices)
+            foreach (var dev in _directInput.GetDevices())
             {
                 string name = dev.ProductName.ToLower();
                 string[] keywords = ["ps3", "playstation", "dual", "wireless controller",
                                      "gamepad", "joystick", "xbox", "controller"];
+                bool match = false;
                 for (int i = 0; i < keywords.Length; i++)
-                {
-                    if (name.Contains(keywords[i]))
-                    {
-                        found = dev;
-                        foundDevice = true;
-                        break;
-                    }
-                }
-                if (foundDevice)
-                {
-                    if (name.Contains("ps3") || name.Contains("playstation"))
-                        break;
-                }
-            }
+                    if (name.Contains(keywords[i])) { match = true; break; }
 
-            if (!foundDevice) return;
+                if (!match) continue;
 
-            var joystick = new Joystick(_directInput, found.InstanceGuid);
-            try
-            {
-                joystick.SetCooperativeLevel(_windowHandle,
-                    CooperativeLevel.NonExclusive | CooperativeLevel.Background);
-                joystick.Properties.AxisMode = DeviceAxisMode.Absolute;
-                joystick.Acquire();
-                _joystick = joystick;
-                System.Diagnostics.Debug.WriteLine($"Mando: {found.ProductName!}");
-            }
-            catch
-            {
-                joystick.Dispose();
+                try
+                {
+                    var joystick = new Joystick(_directInput, dev.InstanceGuid);
+                    joystick.SetCooperativeLevel(_windowHandle,
+                        CooperativeLevel.NonExclusive | CooperativeLevel.Background);
+                    joystick.Properties.AxisMode = DeviceAxisMode.Absolute;
+                    joystick.Acquire();
+                    _joystick = joystick;
+                    CurrentDeviceName = dev.ProductName;
+                    System.Diagnostics.Debug.WriteLine($"Mando: {dev.ProductName}");
+                    return;
+                }
+                catch { continue; }
             }
         }
 

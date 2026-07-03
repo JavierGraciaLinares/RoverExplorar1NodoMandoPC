@@ -295,12 +295,25 @@
       <TabItem Header="MANDO">
         <Grid RowDefinitions="Auto,Auto,Auto,1*" RowSpacing="8" Margin="0,8,0,0">
 
-          <!-- Connection status -->
+          <!-- Device selector -->
           <Border Classes="card">
-            <StackPanel Orientation="Horizontal" Spacing="12">
-              <Border Background="{Binding ControllerStatusColor}" Classes="statusDot" Width="12" Height="12" CornerRadius="6"/>
-              <TextBlock Text="{Binding ControllerStatus, StringFormat='{}Estado: {0}'}" FontSize="15" FontWeight="Bold" VerticalAlignment="Center"/>
-            </StackPanel>
+            <Grid RowDefinitions="Auto,Auto" RowSpacing="8">
+              <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                <TextBlock Text="Controlador:" FontSize="12" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableControllers}"
+                          SelectedItem="{Binding SelectedController}"
+                          PlaceholderText="Seleccionar controlador..."
+                          MinWidth="260"/>
+                <Button Grid.Column="2" Content="Buscar" Command="{Binding RefreshControllersCommand}"
+                        Background="{StaticResource BgBase}" Foreground="{StaticResource TextPrimary}"
+                        BorderBrush="{StaticResource BorderCard}" BorderThickness="1" CornerRadius="6"
+                        FontSize="12" MinWidth="70"/>
+              </Grid>
+              <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12">
+                <Border Background="{Binding ControllerStatusColor}" Classes="statusDot" Width="12" Height="12" CornerRadius="6"/>
+                <TextBlock Text="{Binding ControllerStatus, StringFormat='{}Estado: {0}'}" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+              </StackPanel>
+            </Grid>
           </Border>
 
           <!-- Axes -->
